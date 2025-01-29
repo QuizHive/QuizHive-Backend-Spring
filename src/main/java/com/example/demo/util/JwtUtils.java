@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -24,11 +25,10 @@ public class JwtUtils {
             @Value("${jwt.expiration.access}") long accessTokenExpiration,
             @Value("${jwt.expiration.refresh}") long refreshTokenExpiration
     ) {
-        // Ensure the secret key is valid for HS256 algorithm
-        if (secret == null || secret.length() < 32) {
-            throw new IllegalArgumentException("JWT secret key must be at least 32 characters long");
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalArgumentException("JWT secret key must be at least 32 bytes long.");
         }
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
     }
@@ -63,31 +63,29 @@ public class JwtUtils {
      * Validate and refresh an Access Token using a Refresh Token
      */
     public String refreshAccessToken(String refreshToken) {
+        logger.info(".................... Received refresh token request: {}", refreshToken);
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(refreshToken)
-                    .getBody();
+            Claims claims = parseClaims(refreshToken);
+            logger.info(".................... Refresh token valid for user ID: {}", claims.getSubject());
 
-            // Check if token is expired
-            if (claims.getExpiration().before(new Date())) {
-                logger.warn("Refresh token expired for userId: {}", claims.getSubject());
+            if (isTokenExpired(claims)) {
+                logger.warn(".................... Refresh token expired for user ID: {}", claims.getSubject());
                 throw new ExpiredJwtException(null, claims, "Refresh token has expired");
             }
 
-            // Generate new access token
-            return generateAccessToken(claims.getSubject());
+            String newAccessToken = generateAccessToken(claims.getSubject());
+            logger.info(".................... New access token generated successfully: {}", newAccessToken);
+            return newAccessToken;
 
         } catch (ExpiredJwtException e) {
-            logger.error("Refresh token expired: {}", e.getMessage());
-            throw e;
+            logger.error(".................... Refresh token expired: {}", e.getMessage());
+            throw new SecurityException("Refresh token has expired", e);
         } catch (JwtException e) {
-            logger.error("Invalid refresh token: {}", e.getMessage());
-            throw new RuntimeException("Invalid refresh token");
+            logger.error(".................... Invalid refresh token: {}", e.getMessage());
+            throw new SecurityException("Invalid refresh token", e);
         } catch (Exception e) {
-            logger.error("Unexpected error while refreshing token: {}", e.getMessage());
-            throw new RuntimeException("Internal server error");
+            logger.error(".................... Unexpected error while refreshing token: {}", e.getMessage());
+            throw new RuntimeException("Internal server error", e);
         }
     }
 
@@ -96,16 +94,23 @@ public class JwtUtils {
      */
     public String getUserIdFromToken(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+            Claims claims = parseClaims(token);
             return claims.getSubject();
         } catch (JwtException e) {
             logger.error("Failed to extract user ID from token: {}", e.getMessage());
-            throw new RuntimeException("Invalid token");
+            throw new SecurityException("Invalid token", e);
         }
+    }
+
+    /**
+     * Parse and Validate Token Claims
+     */
+    private Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     /**

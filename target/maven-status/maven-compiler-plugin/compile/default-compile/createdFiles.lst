@@ -8,7 +8,6 @@ com/example/demo/DemoApplication.class
 com/example/demo/config/SecurityConfig.class
 com/example/demo/controller/AuthController$LoginRequest.class
 com/example/demo/controller/HealthController.class
-com/example/demo/model/Submit.class
 com/example/demo/controller/AuthController$RegisterResponse.class
 com/example/demo/model/User.class
 com/example/demo/service/UserService.class

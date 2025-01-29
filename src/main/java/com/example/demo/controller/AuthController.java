@@ -49,9 +49,9 @@ public class AuthController {
     }
 
     /**
-     * POST /auth/refresh-token
+     * POST /auth/refreshToken
      */
-    @PostMapping("/refresh-token")
+    @PostMapping("/refreshToken")
     public ResponseEntity<?> refreshToken(@RequestBody RefreshRequest request) {
         try {
             logger.info("Received refresh token request.");
@@ -125,7 +125,7 @@ public class AuthController {
         public void setPassword(String password) { this.password = password; }
     }
 
-    // /auth/refresh-token request
+    // /auth/refreshToken request
     public static class RefreshRequest {
         private String rToken;
         public String getrToken() { return rToken; }
