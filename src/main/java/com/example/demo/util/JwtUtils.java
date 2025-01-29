@@ -1,5 +1,7 @@
 package com.example.demo.util;
 
+import java.util.Base64;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
@@ -25,10 +27,8 @@ public class JwtUtils {
             @Value("${jwt.expiration.access}") long accessTokenExpiration,
             @Value("${jwt.expiration.refresh}") long refreshTokenExpiration
     ) {
-        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            throw new IllegalArgumentException("JWT secret key must be at least 32 bytes long.");
-        }
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        byte[] decodedKey = Base64.getDecoder().decode(secret);
+        this.secretKey = Keys.hmacShaKeyFor(decodedKey);
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
     }
@@ -73,9 +73,7 @@ public class JwtUtils {
                 throw new ExpiredJwtException(null, claims, "Refresh token has expired");
             }
 
-            String newAccessToken = generateAccessToken(claims.getSubject());
-            logger.info(".................... New access token generated successfully: {}", newAccessToken);
-            return newAccessToken;
+            return generateAccessToken(claims.getSubject());
 
         } catch (ExpiredJwtException e) {
             logger.error(".................... Refresh token expired: {}", e.getMessage());
@@ -83,9 +81,6 @@ public class JwtUtils {
         } catch (JwtException e) {
             logger.error(".................... Invalid refresh token: {}", e.getMessage());
             throw new SecurityException("Invalid refresh token", e);
-        } catch (Exception e) {
-            logger.error(".................... Unexpected error while refreshing token: {}", e.getMessage());
-            throw new RuntimeException("Internal server error", e);
         }
     }
 
