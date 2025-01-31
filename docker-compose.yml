@@ -1,0 +1,24 @@
+services:
+  app:
+    build: .
+    container_name: quizhive_spring
+    env_file: .env
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # MongoDB service
+  mongo:
+    container_name: quizhive_mongo
+    image: mongo
+    ports:
+      - "127.0.0.1:$DB_PORT:27017"
+    volumes:
+      - quizhive_data:/data/quiz
+    restart: unless-stopped
+
+volumes:
+  quizhive_data:
+    driver: local
