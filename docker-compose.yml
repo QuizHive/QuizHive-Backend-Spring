@@ -1,23 +1,36 @@
+version: "3.9"
+
 services:
   app:
-    build: .
+    image: amiril/quizhive_spring:latest
     container_name: quizhive_spring
     env_file: .env
     ports:
       - "${PORT}:${PORT}"
     depends_on:
-      - db
+      - mongodb
     restart: unless-stopped
 
   # MongoDB service
-  mongo:
-    container_name: quizhive_mongo
-    image: mongo
+  mongodb:
+    container_name: quizhive_mongodb
+    image: mongo:latest
+    restart: always
+    command:
+      - --storageEngine
+      - wiredTiger
+      - --auth
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
     ports:
-      - "127.0.0.1:$DB_PORT:27017"
+      - "27017:27017"
     volumes:
-      - quizhive_data:/data/quiz
-    restart: unless-stopped
+      - ./mongodb-data:/data/db
+      - ./db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    env_file: .env
+
 
 volumes:
   quizhive_data:
