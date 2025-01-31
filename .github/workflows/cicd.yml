@@ -59,6 +59,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "docker-compose.yml,.env"
           target: "/home/ubuntu/QuizHive_new/QuizHive-Backend-SpringBoot-Maven"
+          options: '-vvv'  
 
         # CHANGE
 
