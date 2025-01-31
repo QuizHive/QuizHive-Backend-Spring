@@ -1,0 +1,92 @@
+name: CICD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Verify WAR file
+        run: |
+          ls target/*.war
+
+      - name: Get WAR name
+        id: get_war
+        run: |
+          echo "QUIZHIVE_WAR_NAME=$(ls target/*.war)" >> $GITHUB_ENV
+
+      - name: Copy WAR file to build context
+        run: |
+          cp ${{ env.QUIZHIVE_WAR_NAME }} ./app.war
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Images
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKER_USERNAME }}/quizhive_spring:latest . --push
+
+      - name: Copy docker-compose.yml and .env to server
+        uses: appleboy/scp-action@v0.1.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml,.env"
+          target: "/home/ubuntu/QuizHive_new/QuizHive-Backend-SpringBoot-Maven"
+
+      - name: Deploy with SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/QuizHive_new/QuizHive-Backend-SpringBoot-Maven
+            docker compose down
+            docker compose pull
+            docker compose up -d
+            max_retries=5
+            retries=0
+            while [ $retries -lt $max_retries ]; do
+              echo "Checking service status... Attempt $((retries + 1))"
+              status=$(docker compose ps --services --filter "status=running" | wc -l)
+              total_services=$(docker compose ps --services | wc -l)
+              if [ "$status" -eq "$total_services" ]; then
+                echo "All services are up!"
+                break
+              fi
+              echo "Not all services are up!"
+              retries=$((retries + 1))
+              sleep 10
+              docker compose up -d
+            done
+            if [ $retries -eq $max_retries ]; then
+              echo "Some services failed to start after $max_retries attempts."
+              exit 1
+            fi
