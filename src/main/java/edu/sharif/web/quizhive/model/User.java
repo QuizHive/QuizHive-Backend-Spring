@@ -1,88 +1,40 @@
 package edu.sharif.web.quizhive.model;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@RequiredArgsConstructor
 @Document(collection = "users")
 public class User {
-
 	@Id
 	private String id;
 
+	@NonNull
 	private String email;
+
+	@NonNull
 	private String passHash;
+
+	@NonNull
 	private String nickname;
+
+	@NonNull
 	private Role role;
+
+	@NonNull
 	private int score;
+
+	@NonNull
 	private Date createdAt;
 
-	public User() {}
-
-	public User(String email, String passHash, String nickname, Role role, int score, Date createdAt) {
-		this.email = email;
-		this.passHash = passHash;
-		this.nickname = nickname;
-		this.role = role;
-		this.score = score;
-		this.createdAt = createdAt;
-	}
-
-	// Getters / Setters
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getPassHash() {
-		return passHash;
-	}
-
-	public void setPassHash(String passHash) {
-		this.passHash = passHash;
-	}
-
-	public String getNickname() {
-		return nickname;
-	}
-
-	public void setNickname(String nickname) {
-		this.nickname = nickname;
-	}
-
-	public Role getRole() {
-		return role;
-	}
-
-	public void setRole(Role role) {
-		this.role = role;
-	}
-
-	public int getScore() {
-		return score;
-	}
-
-	public void setScore(int score) {
-		this.score = score;
-	}
-
-	public Date getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-	}
+	@DBRef(lazy = true)
+	private List<User> followings;
 }

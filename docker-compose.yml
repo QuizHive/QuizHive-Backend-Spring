@@ -6,7 +6,7 @@ services:
     container_name: quizhive_spring
     env_file: .env
     ports:
-      - "${PORT}:${PORT}"
+      - "${PORT}:8080"
     depends_on:
       - mongodb
     restart: unless-stopped

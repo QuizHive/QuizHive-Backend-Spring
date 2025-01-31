@@ -22,6 +22,12 @@ public class GlobalExceptionHandler {
 				.body(Map.of("error", ex.getMessage()));
 	}
 
+	@ExceptionHandler(BadRequestException.class)
+	public ResponseEntity<Map<String, String>> handleBadRequestException(BadRequestException ex) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(Map.of("error", ex.getMessage()));
+	}
+
 	@ExceptionHandler(UnauthorizedException.class)
 	public ResponseEntity<Map<String, String>> handleUnauthorizedException(UnauthorizedException ex) {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
