@@ -1,0 +1,54 @@
+# Docker specific
+*.pid
+*.swp
+coverage/
+docker-compose.override.yml
+
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# Maven
+.mvn/
+
+# Environment varibles
+.env
+*.env
+*.env.test
+*.env copy
+
+# Tests
+/tmp
+temp
+/out-tsc
+/dist
