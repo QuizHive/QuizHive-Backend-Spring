@@ -60,6 +60,8 @@ jobs:
           source: "docker-compose.yml,.env"
           target: "/home/ubuntu/QuizHive_new/QuizHive-Backend-SpringBoot-Maven"
 
+        # CHANGE
+
       - name: Deploy with SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
