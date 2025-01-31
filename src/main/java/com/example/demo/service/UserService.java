@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ScoreboardUser;
-import com.example.demo.dto.UserInfo;
+import com.example.demo.dto.ScoreboardUserDTO;
+import com.example.demo.dto.UserInfoDTO;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
@@ -21,16 +21,16 @@ public class UserService {
      * Retrieves user info by ID.
      * Throws NotFoundException if not found.
      */
-    public UserInfo getUserInfo(String id) {
+    public UserInfoDTO getUserInfo(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         return convertToUserInfo(user);
     }
 
     /**
-     * Return all users as a list of UserInfo
+     * Return all users as a list of UserInfoDTO
      */
-    public List<UserInfo> getAllUsers() {
+    public List<UserInfoDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream()
                 .map(this::convertToUserInfo)
@@ -58,10 +58,10 @@ public class UserService {
         List<User> allUsers = userRepository.findAll();
         allUsers.sort((a, b) -> Integer.compare(b.getScore(), a.getScore()));
         List<User> topUsers = allUsers.stream().limit(n).collect(Collectors.toList());
-        List<ScoreboardUser> scoreboard = new ArrayList<>();
+        List<ScoreboardUserDTO> scoreboard = new ArrayList<>();
         for (int i = 0; i < topUsers.size(); i++) {
             User u = topUsers.get(i);
-            ScoreboardUser su = new ScoreboardUser(
+            ScoreboardUserDTO su = new ScoreboardUserDTO(
                     i + 1,         // rank (1-based)
                     u.getId(),
                     u.getEmail(),
@@ -75,9 +75,9 @@ public class UserService {
         User loggedInUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        ScoreboardUser userRank = null;
+        ScoreboardUserDTO userRank = null;
 
-        Optional<ScoreboardUser> inTop = scoreboard.stream()
+        Optional<ScoreboardUserDTO> inTop = scoreboard.stream()
                 .filter(su -> su.getId().equals(loggedInUser.getId()))
                 .findFirst();
 
@@ -88,7 +88,7 @@ public class UserService {
                     rank++;
                 }
             }
-            userRank = new ScoreboardUser(rank,
+            userRank = new ScoreboardUserDTO(rank,
                     loggedInUser.getId(),
                     loggedInUser.getEmail(),
                     loggedInUser.getNickname(),
@@ -108,10 +108,10 @@ public class UserService {
     }
 
     /**
-     * Helper method: Convert User to UserInfo
+     * Helper method: Convert User to UserInfoDTO
      */
-    private UserInfo convertToUserInfo(User user) {
-        return new UserInfo(
+    private UserInfoDTO convertToUserInfo(User user) {
+        return new UserInfoDTO(
                 user.getId(),
                 user.getEmail(),
                 user.getNickname(),

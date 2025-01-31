@@ -5,7 +5,7 @@ import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.util.JwtUtils;
+import com.example.demo.security.JwtUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,7 @@ public class AuthService {
      * Login a user
      */
     public LoginResponse loginUser(String email, String rawPassword) {
-        logger.info("🔵 Login attempt for email: {}", email);
+        logger.info("............................. Login attempt for email: {}", email);
 
         User user = userRepository.findByEmail(email);
         if (user == null) {
