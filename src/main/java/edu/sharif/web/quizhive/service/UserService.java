@@ -21,6 +21,9 @@ public class UserService {
 
 	// Use LevenshteinDistance to find the closest objects to the query
 	private static <T> List<T> search(List<T> list, Function<T, String> stringFunction, String query, int limit) {
+		if (limit <= 0) {
+			throw new IllegalArgumentException("Limit must be greater than 0");
+		}
 		PriorityQueue<ObjSimilarity<T>> top = new PriorityQueue<>(limit, Comparator.comparingDouble(us -> -us.similarity));
 		list.forEach(element -> {
 			double similarity = calculateSimilarityPercentage(query, stringFunction.apply(element));

@@ -55,7 +55,11 @@ public class UserController {
 	@GetMapping("/search")
 	@PreAuthorize("hasRole('PLAYER') or hasRole('ADMIN')")
 	public List<UserInfoDTO> getUsers(@RequestParam String query) {
-		SearchUserDTO searchUserDTO = SearchUserDTO.builder().nicknamequery(query).role(Role.ADMIN).build();
+		SearchUserDTO searchUserDTO = SearchUserDTO.builder()
+		.nicknamequery(query)
+		.role(Role.ADMIN)
+		.limit(10)
+		.build();
 		return userService.searchUsers(searchUserDTO);
 	}
 
