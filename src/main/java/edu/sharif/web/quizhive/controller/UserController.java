@@ -3,6 +3,7 @@ package edu.sharif.web.quizhive.controller;
 import edu.sharif.web.quizhive.dto.requestdto.SearchUserDTO;
 import edu.sharif.web.quizhive.dto.resultdto.UserInfoDTO;
 import edu.sharif.web.quizhive.model.LoggedInUser;
+import edu.sharif.web.quizhive.model.Role;
 import edu.sharif.web.quizhive.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,7 +26,7 @@ public class UserController {
 	@Operation(summary = "Get logged-in user's info", description = "Returns the currently logged-in user's details.")
 	@ApiResponse(responseCode = "200", description = "User information retrieved successfully")
 	@GetMapping("/me")
-	@PreAuthorize("isAuthenticated()")
+	@PreAuthorize("hhasAnyRole('ADMIN', 'PLAYER')")
 	public UserInfoDTO getCurrentUserInfo(@AuthenticationPrincipal LoggedInUser user) {
 		return userService.getUserInfo(user.get().getId());
 	}
@@ -34,7 +35,7 @@ public class UserController {
 	@ApiResponse(responseCode = "200", description = "User found")
 	@ApiResponse(responseCode = "404", description = "User not found")
 	@GetMapping("/info/{userId}")
-	@PreAuthorize("isAuthenticated()")
+	@PreAuthorize("hasAnyRole('ADMIN', 'PLAYER')")
 	public UserInfoDTO getUserById(@PathVariable("userId") String userId) {
 		return userService.getUserInfo(userId);
 	}
@@ -53,7 +54,8 @@ public class UserController {
 	@ApiResponse(responseCode = "200", description = "Users retrieved successfully")
 	@GetMapping("/search")
 	@PreAuthorize("hasAnyRole('ADMIN', 'PLAYER')")
-	public List<UserInfoDTO> getUsers(@RequestParam SearchUserDTO searchUserDTO) {
+	public List<UserInfoDTO> getUsers(@RequestParam String query) {
+		SearchUserDTO searchUserDTO = SearchUserDTO.builder().nicknamequery(query).role(Role.ADMIN).build();
 		return userService.searchUsers(searchUserDTO);
 	}
 
