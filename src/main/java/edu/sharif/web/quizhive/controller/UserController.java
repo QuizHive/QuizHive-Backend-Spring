@@ -26,7 +26,7 @@ public class UserController {
 	@Operation(summary = "Get logged-in user's info", description = "Returns the currently logged-in user's details.")
 	@ApiResponse(responseCode = "200", description = "User information retrieved successfully")
 	@GetMapping("/me")
-	@PreAuthorize("hhasAnyRole('ADMIN', 'PLAYER')")
+	@PreAuthorize("hasRole('PLAYER') or hasRole('ADMIN')")
 	public UserInfoDTO getCurrentUserInfo(@AuthenticationPrincipal LoggedInUser user) {
 		return userService.getUserInfo(user.get().getId());
 	}
@@ -35,7 +35,7 @@ public class UserController {
 	@ApiResponse(responseCode = "200", description = "User found")
 	@ApiResponse(responseCode = "404", description = "User not found")
 	@GetMapping("/info/{userId}")
-	@PreAuthorize("hasAnyRole('ADMIN', 'PLAYER')")
+	@PreAuthorize("hasRole('PLAYER') or hasRole('ADMIN')")
 	public UserInfoDTO getUserById(@PathVariable("userId") String userId) {
 		return userService.getUserInfo(userId);
 	}
@@ -53,7 +53,7 @@ public class UserController {
 	@Operation(summary = "Search users", description = "Fetches a list of users.")
 	@ApiResponse(responseCode = "200", description = "Users retrieved successfully")
 	@GetMapping("/search")
-	@PreAuthorize("hasAnyRole('ADMIN', 'PLAYER')")
+	@PreAuthorize("hasRole('PLAYER') or hasRole('ADMIN')")
 	public List<UserInfoDTO> getUsers(@RequestParam String query) {
 		SearchUserDTO searchUserDTO = SearchUserDTO.builder().nicknamequery(query).role(Role.ADMIN).build();
 		return userService.searchUsers(searchUserDTO);
