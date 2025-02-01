@@ -17,7 +17,7 @@ public class QuestionDTO {
 	private String text;
 	private List<String> options;
 	private int correct;
-	private String categoryId;
+	private CategoryDTO category;
 	private String creator;
 	private int solves;
 	private int difficulty;

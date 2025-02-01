@@ -51,9 +51,9 @@ public class UserController {
 
 	@Operation(summary = "Search users", description = "Fetches a list of users.")
 	@ApiResponse(responseCode = "200", description = "Users retrieved successfully")
-	@GetMapping
+	@GetMapping("/search")
 	@PreAuthorize("hasAnyRole('ADMIN', 'PLAYER')")
-	public List<UserInfoDTO> getUsers(SearchUserDTO searchUserDTO) {
+	public List<UserInfoDTO> getUsers(@RequestParam SearchUserDTO searchUserDTO) {
 		return userService.searchUsers(searchUserDTO);
 	}
 

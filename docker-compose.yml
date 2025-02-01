@@ -2,8 +2,8 @@ version: "3.9"
 
 services:
   app:
-    image: amiril/quizhive_spring:latest
-#    build: .
+#    image: amiril/quizhive_spring:latest
+    build: .
     container_name: quizhive_spring
     env_file: .env
     ports:

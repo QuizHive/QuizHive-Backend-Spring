@@ -88,7 +88,13 @@ public class QuestionService {
 				.options(question.getOptions())
 				.correct(question.getCorrect())
 				.solves(question.getSolves())
-				.categoryId(question.getCategory().getId())
+				.category(
+						CategoryDTO.builder()
+								.id(question.getCategory().getId())
+								.categoryName(question.getCategory().getCategoryName())
+								.description(question.getCategory().getDescription())
+								.build()
+				)
 				.difficulty(question.getDifficulty().ordinal())
 				.build();
 	}
@@ -128,7 +134,13 @@ public class QuestionService {
 						.text(q.getText())
 						.options(q.getOptions())
 						.correct(q.getCorrect())
-						.categoryId(q.getCategory().getId())
+						.category(
+								CategoryDTO.builder()
+										.id(q.getCategory().getId())
+										.categoryName(q.getCategory().getCategoryName())
+										.description(q.getCategory().getDescription())
+										.build()
+						)
 						.creator(q.getCreator().getNickname())
 						.solves(q.getSolves())
 						.difficulty(q.getDifficulty().ordinal())
@@ -146,7 +158,13 @@ public class QuestionService {
 				.text(question.getText())
 				.options(question.getOptions())
 				.correct(question.getCorrect())
-				.categoryId(question.getCategory().getId())
+				.category(
+						CategoryDTO.builder()
+								.id(question.getCategory().getId())
+								.categoryName(question.getCategory().getCategoryName())
+								.description(question.getCategory().getDescription())
+								.build()
+				)
 				.solves(question.getSolves())
 				.difficulty(question.getDifficulty().ordinal())
 				.build();

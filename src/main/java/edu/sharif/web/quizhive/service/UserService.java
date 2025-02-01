@@ -22,14 +22,17 @@ public class UserService {
 	// Use LevenshteinDistance to find the closest objects to the query
 	private static <T> List<T> search(List<T> list, Function<T, String> stringFunction, String query, int limit) {
 		PriorityQueue<ObjSimilarity<T>> top = new PriorityQueue<>(limit, Comparator.comparingDouble(us -> -us.similarity));
-		list.stream().forEach(element -> {
+		list.forEach(element -> {
 			double similarity = calculateSimilarityPercentage(query, stringFunction.apply(element));
 			if (similarity >= 50.0) {  // Only consider users with at least 50% similarity
 				if (top.size() < limit) {
 					top.add(new ObjSimilarity<>(element, similarity));
-				} else if (top.peek().similarity < similarity) {
-					top.poll();
-					top.add(new ObjSimilarity<>(element, similarity));
+				} else {
+					assert top.peek() != null;
+					if (top.peek().similarity < similarity) {
+						top.poll();
+						top.add(new ObjSimilarity<>(element, similarity));
+					}
 				}
 			}
 		});
@@ -115,7 +118,10 @@ public class UserService {
 	 * - userRank: The scoreboard data for the logged-in user
 	 */
 	public Map<String, Object> getScoreboard(String userId, int n) {
-		List<User> allUsers = userRepository.findAll();
+		// i want to filter and get all users have role PLAYER
+		List<User> allUsers = new ArrayList<>(userRepository.findAll().stream()
+				.filter(u -> u.getRole() == Role.PLAYER)
+				.toList());
 		allUsers.sort((a, b) -> Integer.compare(b.getScore(), a.getScore()));
 		List<User> topUsers = allUsers.stream().limit(n).toList();
 		List<ScoreboardUserDTO> scoreboard = new ArrayList<>();
