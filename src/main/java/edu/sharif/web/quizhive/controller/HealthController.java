@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class HealthController {
 	@Operation(summary = "Health Check", description = "Returns OK if the service is running.")
 	@ApiResponse(responseCode = "200", description = "Service is running")
+	@ApiResponse(responseCode = "500", description = "Service is down")
 	@GetMapping("/health")
 	public ResponseEntity<String> healthCheck() {
 		return ResponseEntity.ok("OK");

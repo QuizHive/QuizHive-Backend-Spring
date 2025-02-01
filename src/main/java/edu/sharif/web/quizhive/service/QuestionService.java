@@ -8,12 +8,8 @@ import edu.sharif.web.quizhive.dto.resultdto.CategoryDTO;
 import edu.sharif.web.quizhive.exception.BadRequestException;
 import edu.sharif.web.quizhive.exception.ConflictException;
 import edu.sharif.web.quizhive.exception.NotFoundException;
-import edu.sharif.web.quizhive.model.Category;
-import edu.sharif.web.quizhive.model.Difficulty;
-import edu.sharif.web.quizhive.model.LoggedInUser;
-import edu.sharif.web.quizhive.model.Question;
-import edu.sharif.web.quizhive.repository.CategoryRepository;
-import edu.sharif.web.quizhive.repository.QuestionRepository;
+import edu.sharif.web.quizhive.model.*;
+import edu.sharif.web.quizhive.repository.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +22,7 @@ import java.util.List;
 public class QuestionService {
 	private final CategoryRepository categoryRepository;
 	private final QuestionRepository questionRepository;
+	private final UserRepository userRepository;
 
 	public List<CategoryDTO> getAllCategories() {
 		return categoryRepository.findAll().stream()
@@ -59,7 +56,6 @@ public class QuestionService {
 	public void deleteCategory(String categoryId) {
 		Category category = categoryRepository.findById(categoryId)
 				.orElseThrow(() -> new NotFoundException("Category not found."));
-		// Cascade delete questions related to this category
 		List<Question> questions = questionRepository.findByCategoryId(categoryId);
 		questionRepository.deleteAll(questions);
 		categoryRepository.delete(category);
@@ -69,12 +65,23 @@ public class QuestionService {
 		Category category = categoryRepository.findById(dto.getCategoryId())
 				.orElseThrow(() -> new NotFoundException("Category not found."));
 
+		User creator = userRepository.findById(dto.getCreatorId())
+				.orElseThrow(() -> new NotFoundException("Creator not found."));
+
+		System.out.println("Found creator: " + creator.getNickname() + " (Role: " + creator.getRole() + ")");
+
+		if (!"ADMIN".equalsIgnoreCase(String.valueOf(creator.getRole()).trim())) {
+			System.out.println("User is not an admin! Rejecting.");
+			throw new BadRequestException("Only admins can create questions.");
+		}
+
 		Question question = Question.builder()
 				.title(dto.getTitle())
 				.text(dto.getText())
 				.options(dto.getOptions())
 				.correct(dto.getCorrect())
 				.category(category)
+				.creator(creator)
 				.difficulty(dto.getDifficulty())
 				.solves(0)
 				.createdAt(new Date())
@@ -89,6 +96,8 @@ public class QuestionService {
 				.options(question.getOptions())
 				.correct(question.getCorrect())
 				.categoryId(question.getCategory().getId())
+				.creator(creator.getId())
+				.difficulty(question.getDifficulty().ordinal())
 				.build();
 	}
 
@@ -108,11 +117,12 @@ public class QuestionService {
 			questions = questionRepository.findAll();
 		}
 
-		if (followedCreator && user == null)
+		if (followedCreator && user == null) {
 			throw new BadRequestException("User must be logged in to filter by followed creator.");
+		}
 
 		questions = questions.stream()
-				.filter(q -> !followedCreator || user.get().getFollowings().contains(q.getCreator()))
+				.filter(q -> !followedCreator || (q.getCreator() != null && user.get().getFollowings().contains(q.getCreator())))
 				.toList();
 
 		if (limit > 0 && limit < questions.size()) {
@@ -127,7 +137,8 @@ public class QuestionService {
 						.options(q.getOptions())
 						.correct(q.getCorrect())
 						.categoryId(q.getCategory().getId())
-						.creator(q.getCreator().getNickname())
+						.creator(q.getCreator() != null ? q.getCreator().getId() : "Unknown")
+						.difficulty(q.getDifficulty().ordinal())
 						.build())
 				.toList();
 	}
@@ -142,7 +153,8 @@ public class QuestionService {
 				.options(question.getOptions())
 				.correct(question.getCorrect())
 				.categoryId(question.getCategory().getId())
-				.creator(question.getCreator().getNickname())
+				.creator(question.getCreator() != null ? question.getCreator().getId() : "Unknown")
+				.difficulty(question.getDifficulty().ordinal())
 				.build();
 	}
 

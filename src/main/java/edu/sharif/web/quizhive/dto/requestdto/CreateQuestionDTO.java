@@ -28,6 +28,9 @@ public class CreateQuestionDTO {
 	@NotBlank(message = "Category ID is required")
 	private String categoryId;
 
+	@NotBlank(message = "Creator ID is required")
+	private String creatorId;
+
 	@NotNull(message = "Difficulty level is required")
 	private Difficulty difficulty;
 }

@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -45,5 +46,12 @@ public class UserController {
 	                                         @AuthenticationPrincipal LoggedInUser user) {
 		String userId = user.get().getId();
 		return userService.getScoreboard(userId, limit);
+	}
+
+	@Operation(summary = "Get all users", description = "Fetches a list of all users.")
+	@ApiResponse(responseCode = "200", description = "Users retrieved successfully")
+	@GetMapping
+	public List<UserInfoDTO> getAllUsers() {
+		return userService.getAllUsers();
 	}
 }
