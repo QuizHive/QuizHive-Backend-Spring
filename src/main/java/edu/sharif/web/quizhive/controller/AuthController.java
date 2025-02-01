@@ -1,6 +1,5 @@
 package edu.sharif.web.quizhive.controller;
 
-import edu.sharif.web.quizhive.dto.requestdto.RefreshTokenReqDTO;
 import edu.sharif.web.quizhive.dto.requestdto.LoginReqDTO;
 import edu.sharif.web.quizhive.dto.requestdto.RegisterReqDTO;
 import edu.sharif.web.quizhive.dto.resultdto.RegisterResponse;
@@ -17,13 +16,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication", description = "Handles user authentication and token management")
 public class AuthController {
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-
 	private final AuthService authService;
 
 	@Operation(summary = "Register a new user", description = "Registers a new user with email, password, nickname, and role.")
@@ -50,10 +48,12 @@ public class AuthController {
 	@ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
 	@PostMapping("/refresh-token")
 	@ResponseStatus(HttpStatus.OK)
-	public TokenDTO refreshToken(@RequestBody RefreshTokenReqDTO rToken) {
-			logger.info("Received refresh token request.");
-			TokenDTO result = authService.refreshToken(rToken);
-			logger.info("New access token generated successfully.");
-			return result;
+	public TokenDTO refreshToken(@RequestBody TokenDTO dto) {
+		logger.info("Received refresh token request.");
+		System.out.println(dto.getRefreshToken());
+		String rToken = dto.getRefreshToken();
+		TokenDTO result = authService.refreshToken(rToken);
+		logger.info("New access token generated successfully.");
+		return result;
 	}
 }

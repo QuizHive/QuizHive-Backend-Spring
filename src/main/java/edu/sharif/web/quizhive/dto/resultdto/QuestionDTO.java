@@ -19,5 +19,6 @@ public class QuestionDTO {
 	private int correct;
 	private String categoryId;
 	private String creator;
+	private int solves;
 	private int difficulty;
 }

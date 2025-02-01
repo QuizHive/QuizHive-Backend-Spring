@@ -1,6 +1,5 @@
 package edu.sharif.web.quizhive.service;
 
-import edu.sharif.web.quizhive.dto.requestdto.RefreshTokenReqDTO;
 import edu.sharif.web.quizhive.dto.resultdto.TokenDTO;
 import edu.sharif.web.quizhive.dto.resultdto.UserInfoDTO;
 import edu.sharif.web.quizhive.exception.ConflictException;
@@ -25,9 +24,6 @@ public class AuthService {
 	private final JwtUtils jwtUtils;
 	private final PasswordEncoder passwordEncoder;
 
-	/**
-	 * Register a new user
-	 */
 	public UserInfoDTO registerUser(String email, String password, String nickname, Role role) {
 		logger.info("Attempting to register user with email: {}", email);
 		if (userRepository.existsByEmail(email)) {
@@ -91,14 +87,11 @@ public class AuthService {
 				.build();
 	}
 
-	/**
-	 * Refresh the access token
-	 */
-	public TokenDTO refreshToken(RefreshTokenReqDTO rToken) {
-		String t = rToken.getRToken();
+	public TokenDTO refreshToken(String t) {
 		logger.info("Received refresh token: {}", t);
+		System.out.printf("Received refresh token: %s\n", t);
 		var aToken = jwtUtils.refreshAccessToken(t);
 		logger.info("Token refreshed successfully");
-		return TokenDTO.builder().accessToken(aToken).build();
+		return TokenDTO.builder().accessToken(aToken).refreshToken(t).build();
 	}
 }

@@ -1,8 +1,8 @@
 package edu.sharif.web.quizhive.security;
 
+import edu.sharif.web.quizhive.model.LoggedInUser;
 import edu.sharif.web.quizhive.model.User;
 import edu.sharif.web.quizhive.repository.UserRepository;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,10 +10,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -37,13 +36,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		userId = jwtUtils.getUsernameFromRequest(request);
 
 		if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			logger.info("Authenticating user with id: {}", userId);
 			User user = userRepository.findById(userId).orElse(null);
 			if (user != null) {
-				List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().toString()));
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-						user, null, authorities
-				);
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				logger.info("User authenticated: {}", user.getEmail());
+				LoggedInUser loggedInUser = new LoggedInUser(user, user.getId(), user.getId(),
+						List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())));
+				logger.info("Authorities: {}", loggedInUser.getAuthorities());
+				Authentication authentication = new UsernamePasswordAuthenticationToken(loggedInUser, null, loggedInUser.getAuthorities());
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
 		}

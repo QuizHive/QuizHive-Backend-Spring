@@ -67,7 +67,7 @@ public class QuestionService {
 				.orElseThrow(() -> new NotFoundException("Category not found."));
 
 		Question question = Question.builder()
-				.creator(null)
+				.creator(creator)
 				.title(dto.getTitle())
 				.text(dto.getText())
 				.options(dto.getOptions())
@@ -81,12 +81,15 @@ public class QuestionService {
 		question = questionRepository.save(question);
 
 		return QuestionDTO.builder()
+				.creator(question.getCreator().getNickname())
 				.id(question.getId())
 				.title(question.getTitle())
 				.text(question.getText())
 				.options(question.getOptions())
 				.correct(question.getCorrect())
+				.solves(question.getSolves())
 				.categoryId(question.getCategory().getId())
+				.difficulty(question.getDifficulty().ordinal())
 				.build();
 	}
 
@@ -120,12 +123,15 @@ public class QuestionService {
 		return questions.stream()
 				.map(q -> QuestionDTO.builder()
 						.id(q.getId())
+						.creator(q.getCreator().getNickname())
 						.title(q.getTitle())
 						.text(q.getText())
 						.options(q.getOptions())
 						.correct(q.getCorrect())
 						.categoryId(q.getCategory().getId())
 						.creator(q.getCreator().getNickname())
+						.solves(q.getSolves())
+						.difficulty(q.getDifficulty().ordinal())
 						.build())
 				.toList();
 	}
@@ -135,20 +141,17 @@ public class QuestionService {
 				.orElseThrow(() -> new NotFoundException("Question not found."));
 		return QuestionDTO.builder()
 				.id(question.getId())
+				.creator(question.getCreator().getNickname())
 				.title(question.getTitle())
 				.text(question.getText())
 				.options(question.getOptions())
 				.correct(question.getCorrect())
 				.categoryId(question.getCategory().getId())
-				.creator(question.getCreator().getNickname())
+				.solves(question.getSolves())
+				.difficulty(question.getDifficulty().ordinal())
 				.build();
 	}
 
-	/**
-	 * Delete a question by its ID.
-	 *
-	 * @param questionId ID of the question to delete.
-	 */
 	public void deleteQuestion(String questionId) {
 		Question question = questionRepository.findById(questionId)
 				.orElseThrow(() -> new NotFoundException("Question not found."));

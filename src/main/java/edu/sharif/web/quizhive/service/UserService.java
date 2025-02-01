@@ -1,8 +1,10 @@
 package edu.sharif.web.quizhive.service;
 
+import edu.sharif.web.quizhive.dto.requestdto.SearchUserDTO;
 import edu.sharif.web.quizhive.dto.resultdto.ScoreboardUserDTO;
 import edu.sharif.web.quizhive.dto.resultdto.UserInfoDTO;
 import edu.sharif.web.quizhive.exception.NotFoundException;
+import edu.sharif.web.quizhive.model.Role;
 import edu.sharif.web.quizhive.model.User;
 import edu.sharif.web.quizhive.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -79,9 +81,25 @@ public class UserService {
 				.collect(Collectors.toList());
 	}
 
-	public List<UserInfoDTO> searchUsers(String query, int limit) {
-		return search(userRepository.findAll(), User::getNickname, query, limit)
-				.stream()
+	public List<UserInfoDTO> searchUsers(SearchUserDTO query) {
+		int limit = query.getLimit();
+		String emailQuery = query.getEmailquery();
+		String nicknameQuery = query.getNicknamequery();
+		Role role = query.getRole();
+		// Get all users with the given role
+		List<User> users = userRepository.findAll();
+		if (role != null) {
+			users = users.stream()
+					.filter(u -> u.getRole() == role)
+					.toList();
+		}
+		if (emailQuery != null && !emailQuery.isEmpty()) {
+			users = search(users, User::getEmail, emailQuery, limit);
+		}
+		if (nicknameQuery != null && !nicknameQuery.isEmpty()) {
+			users = search(users, User::getNickname, nicknameQuery, limit);
+		}
+		return users.stream()
 				.map(this::convertToUserInfo)
 				.collect(Collectors.toList());
 	}
@@ -147,9 +165,6 @@ public class UserService {
 		return result;
 	}
 
-	/**
-	 * Helper method: Convert User to UserInfoDTO
-	 */
 	private UserInfoDTO convertToUserInfo(User user) {
 		return new UserInfoDTO(
 				user.getId(),
@@ -159,6 +174,20 @@ public class UserService {
 				user.getScore(),
 				user.getCreatedAt()
 		);
+	}
+
+	public void followUser(String id, String userId) {
+		User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+		User toFollow = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+		user.getFollowings().add(toFollow);
+		userRepository.save(user);
+	}
+
+	public void unfollowUser(String id, String userId) {
+		User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+		User toUnfollow = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+		user.getFollowings().remove(toUnfollow);
+		userRepository.save(user);
 	}
 
 	private record ObjSimilarity<T>(T obj, double similarity) {}

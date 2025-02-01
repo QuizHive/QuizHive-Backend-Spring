@@ -48,6 +48,7 @@ public class JwtUtils {
 				.setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + expirationTime))
 				.setId(UUID.randomUUID().toString())
+				.claim("access", expirationTime == accessTokenExpiration)
 				.signWith(secretKey, SignatureAlgorithm.HS256)
 				.compact();
 	}
@@ -66,15 +67,22 @@ public class JwtUtils {
 
 	// New method to extract and validate the token
 	public String getUsernameFromRequest(HttpServletRequest request) {
-		// Get the Authorization header
-		String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+		try {
+			// Get the Authorization header
+			String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-		// Check if the header has the Bearer token
-		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-			String token = authorizationHeader.substring(7); // Remove "Bearer " prefix
-			if (validateToken(token)) {
-				return parseClaims(token).getSubject();
+			// Check if the header has the Bearer token
+			if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+				String token = authorizationHeader.substring(7); // Remove "Bearer " prefix
+				if (validateToken(token)) {
+					Claims claims = parseClaims(token);
+					// Check if it's an access token
+					if(claims.get("access", Boolean.class))
+						return claims.getSubject();
+				}
 			}
+		} catch (JwtException e) {
+			logger.error("Invalid token: {}", e.getMessage());
 		}
 		return null; // Or throw an exception as needed
 	}

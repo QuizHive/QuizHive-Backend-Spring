@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.responses.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/questions/submit")
+@RequestMapping("/api/questions/submit")
 @RequiredArgsConstructor
 public class SubmitController {
 
@@ -28,7 +28,7 @@ public class SubmitController {
 			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	@PostMapping
-	@PreAuthorize("hasRole('PLAYER') or hasRole('ADMIN')")
+	@PreAuthorize("hasRole('PLAYER')")
 	public ResponseEntity<SubmitDTO> submitAnswer(@Valid @RequestBody CreateSubmitDTO dto,
 	                                              @AuthenticationPrincipal LoggedInUser user) {
 		SubmitDTO submit = submitService.submitAnswer(user.get(), dto.getQuestionId(), dto.getChoice());

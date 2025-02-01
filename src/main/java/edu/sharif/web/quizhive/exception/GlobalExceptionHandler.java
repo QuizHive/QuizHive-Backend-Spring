@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -63,6 +64,13 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(SecurityException.class)
 	public ResponseEntity<Map<String, String>> handleSecurityException(SecurityException ex) {
 		logger.error("Security exception", ex);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN)
+				.body(Map.of("error", "Access denied"));
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<Map<String, String>> handleAccessDeniedException(AccessDeniedException ex) {
+		logger.error("Access denied", ex);
 		return ResponseEntity.status(HttpStatus.FORBIDDEN)
 				.body(Map.of("error", "Access denied"));
 	}
