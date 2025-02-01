@@ -5,6 +5,7 @@ import edu.sharif.web.quizhive.dto.requestdto.CreateQuestionDTO;
 import edu.sharif.web.quizhive.dto.requestdto.GetQuestionsDTO;
 import edu.sharif.web.quizhive.dto.resultdto.QuestionDTO;
 import edu.sharif.web.quizhive.dto.resultdto.CategoryDTO;
+import edu.sharif.web.quizhive.dto.resultdto.SubmitDTO;
 import edu.sharif.web.quizhive.exception.BadRequestException;
 import edu.sharif.web.quizhive.exception.ConflictException;
 import edu.sharif.web.quizhive.exception.NotFoundException;
@@ -23,6 +24,7 @@ import java.util.List;
 public class QuestionService {
 	private final CategoryRepository categoryRepository;
 	private final QuestionRepository questionRepository;
+	private final SubmitService submitService;
 
 	public List<CategoryDTO> getAllCategories() {
 		return categoryRepository.findAll().stream()
@@ -143,6 +145,12 @@ public class QuestionService {
 						)
 						.creator(q.getCreator().getNickname())
 						.solves(q.getSolves())
+						.lastChoiceByUser(
+								submitService.getSubmissions(user.get().getId(), q.getId()).stream()
+										.map(SubmitDTO::getChoice)
+										.findFirst()
+										.orElse(-1)
+						)
 						.difficulty(q.getDifficulty().ordinal())
 						.build())
 				.toList();
