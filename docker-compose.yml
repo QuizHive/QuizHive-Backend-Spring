@@ -15,15 +15,15 @@ services:
   # MongoDB service
   mongodb:
     container_name: quizhive_mongo
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+#    environment:
+#      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+#      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+#      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
     image: mongo:latest
     command:
       - --storageEngine
       - wiredTiger
-      - --auth
+#      - --auth
     ports:
       - "127.0.0.1:$MONGO_DB_PORT:27017"
     volumes:
