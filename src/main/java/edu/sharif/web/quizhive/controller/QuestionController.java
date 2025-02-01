@@ -89,8 +89,9 @@ public class QuestionController {
 	})
 	@PostMapping
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<QuestionDTO> createQuestion(@Valid @RequestBody CreateQuestionDTO dto) {
-		QuestionDTO question = questionService.createQuestion(dto);
+	public ResponseEntity<QuestionDTO> createQuestion(@Valid @RequestBody CreateQuestionDTO dto,
+	                                                  @AuthenticationPrincipal LoggedInUser user) {
+		QuestionDTO question = questionService.createQuestion(user.get(), dto);
 		return new ResponseEntity<>(question, HttpStatus.CREATED);
 	}
 

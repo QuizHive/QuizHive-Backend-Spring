@@ -16,6 +16,7 @@ public class CreateSubmitDTO {
 	@NotBlank(message = "Question ID is required")
 	private String questionId;
 
+	@NotBlank(message = "Choice is required")
 	@Min(value = 0, message = "Choice index must be between 0 and 3")
 	@Max(value = 3, message = "Choice index must be between 0 and 3")
 	private int choice;

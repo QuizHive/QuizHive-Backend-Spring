@@ -8,10 +8,7 @@ import edu.sharif.web.quizhive.dto.resultdto.CategoryDTO;
 import edu.sharif.web.quizhive.exception.BadRequestException;
 import edu.sharif.web.quizhive.exception.ConflictException;
 import edu.sharif.web.quizhive.exception.NotFoundException;
-import edu.sharif.web.quizhive.model.Category;
-import edu.sharif.web.quizhive.model.Difficulty;
-import edu.sharif.web.quizhive.model.LoggedInUser;
-import edu.sharif.web.quizhive.model.Question;
+import edu.sharif.web.quizhive.model.*;
 import edu.sharif.web.quizhive.repository.CategoryRepository;
 import edu.sharif.web.quizhive.repository.QuestionRepository;
 import jakarta.validation.Valid;
@@ -65,11 +62,12 @@ public class QuestionService {
 		categoryRepository.delete(category);
 	}
 
-	public QuestionDTO createQuestion(CreateQuestionDTO dto) {
+	public QuestionDTO createQuestion(User creator, CreateQuestionDTO dto) {
 		Category category = categoryRepository.findById(dto.getCategoryId())
 				.orElseThrow(() -> new NotFoundException("Category not found."));
 
 		Question question = Question.builder()
+				.creator(null)
 				.title(dto.getTitle())
 				.text(dto.getText())
 				.options(dto.getOptions())

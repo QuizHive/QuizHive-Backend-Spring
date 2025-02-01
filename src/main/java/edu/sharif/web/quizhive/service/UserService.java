@@ -9,12 +9,62 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 	private final UserRepository userRepository;
+
+	// Use LevenshteinDistance to find the closest objects to the query
+	private static <T> List<T> search(List<T> list, Function<T, String> stringFunction, String query, int limit) {
+		PriorityQueue<ObjSimilarity<T>> top = new PriorityQueue<>(limit, Comparator.comparingDouble(us -> -us.similarity));
+		list.stream().forEach(element -> {
+			double similarity = calculateSimilarityPercentage(query, stringFunction.apply(element));
+			if (similarity >= 50.0) {  // Only consider users with at least 50% similarity
+				if (top.size() < limit) {
+					top.add(new ObjSimilarity<>(element, similarity));
+				} else if (top.peek().similarity < similarity) {
+					top.poll();
+					top.add(new ObjSimilarity<>(element, similarity));
+				}
+			}
+		});
+		return top.stream()
+				.sorted(Comparator.comparingDouble(us -> -us.similarity))
+				.map(us -> us.obj)
+				.collect(Collectors.toList());
+	}
+
+	private static double calculateSimilarityPercentage(String s1, String s2) {
+		int distance = levenshteinDistance(s1, s2);
+		int maxLen = Math.max(s1.length(), s2.length());
+		return maxLen == 0 ? 100 : (1 - (double) distance / maxLen) * 100;
+	}
+
+	private static int levenshteinDistance(String s1, String s2) {
+		int len1 = s1.length();
+		int len2 = s2.length();
+
+		int[][] dp = new int[len1 + 1][len2 + 1];
+
+		for (int i = 0; i <= len1; i++) {
+			for (int j = 0; j <= len2; j++) {
+				if (i == 0) {
+					dp[i][j] = j;
+				} else if (j == 0) {
+					dp[i][j] = i;
+				} else if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+					dp[i][j] = dp[i - 1][j - 1];
+				} else {
+					dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+				}
+			}
+		}
+
+		return dp[len1][len2];
+	}
 
 	public UserInfoDTO getUserInfo(String id) {
 		User user = userRepository.findById(id)
@@ -25,6 +75,13 @@ public class UserService {
 	public List<UserInfoDTO> getAllUsers() {
 		List<User> users = userRepository.findAll();
 		return users.stream()
+				.map(this::convertToUserInfo)
+				.collect(Collectors.toList());
+	}
+
+	public List<UserInfoDTO> searchUsers(String query, int limit) {
+		return search(userRepository.findAll(), User::getNickname, query, limit)
+				.stream()
 				.map(this::convertToUserInfo)
 				.collect(Collectors.toList());
 	}
@@ -103,4 +160,6 @@ public class UserService {
 				user.getCreatedAt()
 		);
 	}
+
+	private record ObjSimilarity<T>(T obj, double similarity) {}
 }

@@ -1,3 +1,7 @@
+mongodb-data/
+
+application.log
+
 # Docker specific
 *.pid
 *.swp
