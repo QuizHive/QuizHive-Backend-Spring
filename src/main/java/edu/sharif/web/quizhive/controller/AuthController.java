@@ -6,6 +6,7 @@ import edu.sharif.web.quizhive.dto.resultdto.RegisterResponse;
 import edu.sharif.web.quizhive.dto.resultdto.TokenDTO;
 import edu.sharif.web.quizhive.dto.resultdto.UserInfoDTO;
 import edu.sharif.web.quizhive.service.AuthService;
+import edu.sharif.web.quizhive.service.GoogleAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +24,7 @@ public class AuthController {
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 	private final AuthService authService;
+	private final GoogleAuthService googleAuthService;
 
 	@Operation(summary = "Register a new user", description = "Registers a new user with email, password, nickname, and role.")
 	@ApiResponse(responseCode = "201", description = "User registered successfully")
@@ -55,5 +57,18 @@ public class AuthController {
 		TokenDTO result = authService.refreshToken(rToken);
 		logger.info("New access token generated successfully.");
 		return result;
+	}
+
+	@Operation(summary = "Login with Google", description = "Authenticates a user using Google OAuth2.")
+	@ApiResponse(responseCode = "200", description = "User logged in successfully")
+	@ApiResponse(responseCode = "401", description = "Invalid Google grant code")
+	@GetMapping("/google")
+	@ResponseStatus(HttpStatus.OK)
+	public TokenDTO grantCode(@RequestParam("code") String code,
+	                          @RequestParam(value = "scope", required = false) String scope,
+	                          @RequestParam(value = "authuser", required = false) String authUser,
+	                          @RequestParam(value = "prompt", required = false) String prompt) {
+		logger.info("Received Google grant code: {}", code);
+		return googleAuthService.processGrantCode(code);
 	}
 }

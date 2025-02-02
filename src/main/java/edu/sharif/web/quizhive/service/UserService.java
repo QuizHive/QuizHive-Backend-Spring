@@ -174,7 +174,7 @@ public class UserService {
 		return result;
 	}
 
-	private UserInfoDTO convertToUserInfo(User user) {
+	public UserInfoDTO convertToUserInfo(User user) {
 		return new UserInfoDTO(
 				user.getId(),
 				user.getEmail(),
