@@ -17,8 +17,7 @@ public class QuizHiveApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				// localhost:8081 and quizhive.ahmz.ir
-				registry.addMapping("/**").allowedOrigins("http://localhost:8081", "http://quizhive.ahmz.ir");
+				registry.addMapping("/**").allowedOrigins("http://localhost:8081", "https://quizhive.ahmz.ir");
 			}
 		};
 	}

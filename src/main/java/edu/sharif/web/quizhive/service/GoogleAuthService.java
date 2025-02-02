@@ -12,6 +12,8 @@ import edu.sharif.web.quizhive.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -52,7 +54,11 @@ public class GoogleAuthService {
 	}
 
 	private UserInfoDTO getProfileDetailsGoogle(String accessToken) {
-		RestTemplate restTemplate = new RestTemplate();
+		var requestFactory = new HttpComponentsClientHttpRequestFactory();
+		requestFactory.setConnectTimeout(20000);
+		requestFactory.setConnectionRequestTimeout(20000);
+		requestFactory.setReadTimeout(30000);
+		RestTemplate restTemplate = new RestTemplate(requestFactory);
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setBearerAuth(accessToken);
 		HttpEntity<String> requestEntity = new HttpEntity<>(httpHeaders);
@@ -72,7 +78,11 @@ public class GoogleAuthService {
 	}
 
 	private String getOauthAccessTokenGoogle(String code) {
-		RestTemplate restTemplate = new RestTemplate();
+		var requestFactory = new HttpComponentsClientHttpRequestFactory();
+		requestFactory.setConnectTimeout(20000);
+		requestFactory.setConnectionRequestTimeout(20000);
+		requestFactory.setReadTimeout(30000);
+		RestTemplate restTemplate = new RestTemplate(requestFactory);
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
